@@ -55,17 +55,17 @@ def check_repeating(master_list, order):
     order['Repeating'] = order['Sequence'].isin(master_Seq)
     return order
 
-def assign_a2pep_num(Order, pep_start_num, master_list): 
-    counting_num = pep_start_num
+def assign_a2pep_num(Order, sample_start_num, ali_start_num,master_list): 
+    ali_counting_num = ali_start_num
+    sample_counting_num = sample_start_num
     for i in Order.index:
         if Order.loc[i,'Repeating']  == False :
-            Order.at[i, 'A2 Pep Number'] = 'PEP' + str(counting_num).zfill(8) + '-0'
+            Order.at[i, 'A2 Pep Number'] = 'PEP' + str(sample_counting_num).zfill(8) + '-0'
             Order.at[i, 'lot Number'] = 0
-            Order.at[i, 'Pep_Regis_Num'] = 'PEP' + str(counting_num).zfill(8)
-            counting_num+= 1
+            Order.at[i, 'Pep_Regis_Num'] = 'PEP' + str(sample_counting_num).zfill(8)
+            sample_counting_num+= 1
             """
-            Still need to add vendor, source protein, UniProtID,
-            Pep_Ali_ID (this may be done on using freezerwork ),
+            Still need to add Unique Plate Number, 
             Positioning depend on how the Freezer is configurated
             """
         else:
@@ -75,6 +75,13 @@ def assign_a2pep_num(Order, pep_start_num, master_list):
             Order.at[i, 'Pep_Regis_Num'] =  temp['Pep_Regis_Num'].iloc[-1]
             Order.at[i, 'A2 Pep Number'] = Order.at[i, 'Pep_Regis_Num'] +'-'+  str(Order.at[i, 'lot Number'])
             # find the repeating number and add lot plus one
+        Order.loc[i,'Pep_Ali_ID'] = 'A' + str(ali_counting_num).zfill(7) 
+        Order.loc[i,'Vender Name'] = ''
+        Order.loc[i,'Vender ID'] = ''
+        Order.loc[i,'Source Protein'] = ''
+        Order.loc[i,'UniProt ID'] = ''
+
+        ali_counting_num += 1
     return Order
 
 def main():
@@ -82,9 +89,10 @@ def main():
     Order = Load_Clean_Order_Form()
     check_duplicate_sequence(Order)
     Order = match_plate_with_order(Order, plate_start_num = 1 )
-    start_num = 0 
+    sample_start_num = 0 
+    aliqout_start_num = 0 
     Order = check_repeating(master, Order)
-    Order = assign_a2pep_num(Order, start_num, master)
+    Order = assign_a2pep_num(Order, sample_start_num, aliqout_start_num, master)
     
     '''
     Note this code can't currently handle if you were to order two peptide with
