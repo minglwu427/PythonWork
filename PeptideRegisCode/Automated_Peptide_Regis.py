@@ -73,7 +73,7 @@ def assign_a2pep_num(Order, sample_start_num, ali_start_num,master_list):
             temp = temp.sort_values(by=['lot Number'])
             Order.at[i, 'lot Number'] = temp['lot Number'].iloc[-1] + 1
             Order.at[i, 'Pep_Regis_Num'] =  temp['Pep_Regis_Num'].iloc[-1]
-            Order.at[i, 'A2 Pep Number'] = Order.at[i, 'Pep_Regis_Num'] +'-'+  str(Order.at[i, 'lot Number'])
+            Order.at[i, 'A2 Pep Number'] = Order.at[i, 'Pep_Regis_Num'] +'-'+  str(int(Order.at[i,'lot Number']))
             # find the repeating number and add lot plus one
         Order.loc[i,'Pep_Ali_ID'] = 'A' + str(ali_counting_num).zfill(7) 
         Order.loc[i,'Vender Name'] = ''
@@ -82,18 +82,42 @@ def assign_a2pep_num(Order, sample_start_num, ali_start_num,master_list):
         Order.loc[i,'UniProt ID'] = ''
 
         ali_counting_num += 1
-    return Order
+    numbers = {'ali_counting_num': ali_counting_num, 'samp_counting_num': sample_counting_num}
+    return Order, numbers
+def writing_ending_numbers(numbers_in_dict):
+    with open('number.txt','w') as outfile:
+        for category, number in numbers_in_dict.items():
+            line= category + '=' + str(number)+ '\n'
+            outfile.write(line)
+def reading_starting_numbers():
+    #initial_number = {}
+    with open('number.txt', 'r') as infile:
+        for line in infile:
+            exec(line)
+            """
+            tokens = line.strip().split('=')
+            category = tokens[0]
+            number = tokens[1]
+            initial_number[category] = int(number)
+            
+    return initial_number
+    """
 
 def main():
+    with open('number.txt', 'r') as infile:
+        for line in infile:
+            exec(line)        
+            
+            
     master = pd.read_excel('TestMaster.xlsx') 
     Order = Load_Clean_Order_Form()
     check_duplicate_sequence(Order)
     Order = match_plate_with_order(Order, plate_start_num = 1 )
-    sample_start_num = 0 
-    aliqout_start_num = 0 
+
     Order = check_repeating(master, Order)
-    Order = assign_a2pep_num(Order, sample_start_num, aliqout_start_num, master)
-    
+    Order, numbers = assign_a2pep_num(Order, sample_counting_num, aliqout_counting_num, master)
+    writing_ending_numbers(numbers)
+
     '''
     Note this code can't currently handle if you were to order two peptide with
     identical sequence at once
