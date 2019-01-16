@@ -1,2 +1,3 @@
-ali_counting_num=2144
-samp_counting_num=0
+ali_counting_num=3226
+samp_counting_num=3226
+plate_starting_num=36
