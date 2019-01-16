@@ -49,6 +49,9 @@ def match_plate_with_order(Order, plate_start_num):
     Order['Column'] = Order['Column'].map(column_dict)
     return Order
 
+    """
+    The number of row and column is messed up right here.
+    """    
 
 def check_repeating(master_list, order):
     master_Seq = master_list['Sequence'].unique()
